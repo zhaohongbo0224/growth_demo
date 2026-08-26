@@ -1,0 +1,1156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude API Growth — Interaction Prototypes</title>
+<style>
+:root{
+  --bone:#f5f4ef;
+  --paper:#faf9f7;
+  --white:#ffffff;
+  --ink:#191919;
+  --ink2:#3d3d3a;
+  --muted:#6d6d68;
+  --muted2:#8a8a83;
+  --line:#e5e3dd;
+  --line2:#d8d4ca;
+  --clay:#d97757;
+  --clay-bg:#f6e5dc;
+  --night:#141413;
+  --serif:"Tiempos Text","Iowan Old Style","Palatino Linotype",Georgia,"Times New Roman",serif;
+  --sans:"Styrene B",-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:#e8e6e0;
+  font-family:var(--sans);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+.hidden{display:none !important}
+
+/* ---------- prototype switcher ---------- */
+.switcher{
+  display:flex;justify-content:center;gap:4px;
+  padding:14px 12px;background:#e8e6e0;
+  border-bottom:1px solid #d6d3cb;position:sticky;top:0;z-index:200;
+}
+.switcher button{
+  font-family:var(--sans);font-size:13px;font-weight:500;color:var(--muted);
+  background:transparent;border:1px solid transparent;border-radius:8px;
+  padding:7px 14px;cursor:pointer;transition:all .15s;
+}
+.switcher button:hover{color:var(--ink);background:rgba(255,255,255,.55)}
+.switcher button.on{background:var(--white);color:var(--ink);border-color:var(--line2);
+  box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.stage{padding:28px 16px 64px}
+
+/* ---------- shared primitives ---------- */
+.btn{
+  font-family:var(--sans);font-size:14px;font-weight:500;
+  border-radius:9px;padding:11px 20px;cursor:pointer;border:1px solid transparent;
+  transition:all .15s;line-height:1.2;
+}
+.btn-primary{background:var(--ink);color:#fff}
+.btn-primary:hover{background:#2e2e2b}
+.btn-ghost{background:var(--white);color:var(--ink);border-color:var(--line2)}
+.btn-ghost:hover{background:#f7f6f3}
+.btn-text{background:transparent;color:var(--muted);border:none;font-size:14px;
+  cursor:pointer;font-family:var(--sans);padding:10px}
+.btn-text:hover{color:var(--ink)}
+.iconbtn{background:transparent;border:none;cursor:pointer;color:var(--muted2);
+  padding:6px;border-radius:7px;line-height:0}
+.iconbtn:hover{background:rgba(0,0,0,.05);color:var(--ink)}
+h1,h2,h3{margin:0}
+
+/* =========================================================
+   PROTOTYPE 1 — in-product graduation prompt
+   ========================================================= */
+.app-window{
+  max-width:1080px;margin:0 auto;background:var(--paper);
+  border:1px solid var(--line2);border-radius:14px;overflow:hidden;
+  box-shadow:0 12px 34px rgba(0,0,0,.10);position:relative;
+}
+.app-bar{
+  display:flex;align-items:center;gap:8px;padding:11px 15px;
+  background:#f0eee8;border-bottom:1px solid var(--line);
+}
+.dot{width:11px;height:11px;border-radius:50%}
+.app-body{display:flex;min-height:560px}
+.rail{
+  width:216px;flex:none;background:#f2f0ea;border-right:1px solid var(--line);
+  padding:16px 12px;
+}
+.rail-brand{display:flex;align-items:center;gap:7px;padding:2px 6px 16px}
+.rail-brand span{font-family:var(--serif);font-size:17px;letter-spacing:-.01em}
+.rail-new{
+  display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);
+  padding:8px 9px;border:1px solid var(--line2);border-radius:8px;background:var(--white);
+  margin-bottom:16px;
+}
+.rail-lbl{font-size:11px;color:var(--muted2);text-transform:uppercase;
+  letter-spacing:.07em;padding:0 9px 7px;font-weight:600}
+.rail-item{font-size:13px;color:var(--ink2);padding:7px 9px;border-radius:7px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rail-item.sel{background:#e4e1d9;color:var(--ink);font-weight:500}
+.rail-item .rep{color:var(--clay);font-size:11px;font-weight:600}
+
+.thread{flex:1;padding:30px 40px 130px;overflow:hidden;position:relative}
+.msg{max-width:640px;margin:0 auto 22px}
+.msg-you{
+  background:#efece5;border-radius:14px;padding:13px 17px;font-size:14.5px;
+  color:var(--ink2);line-height:1.55;
+}
+.msg-c{display:flex;gap:13px}
+.msg-c .ast{flex:none;margin-top:2px}
+.msg-c .body{font-size:14.5px;line-height:1.65;color:var(--ink2)}
+.msg-c .body b{color:var(--ink);font-weight:600}
+.filerow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);
+  background:var(--white);border:1px solid var(--line2);border-radius:7px;padding:5px 10px;
+}
+.composer{
+  max-width:640px;margin:0 auto;border:1px solid var(--line2);background:var(--white);
+  border-radius:13px;padding:13px 15px;font-size:14px;color:var(--muted2);
+  display:flex;justify-content:space-between;align-items:center;
+}
+
+/* the graduation toast */
+.toast-wrap{
+  position:absolute;left:0;right:0;bottom:26px;display:flex;justify-content:center;
+  pointer-events:none;padding:0 24px;z-index:20;
+}
+.toast{
+  pointer-events:auto;display:flex;align-items:center;gap:18px;
+  background:var(--white);border:1px solid var(--line);border-radius:16px;
+  padding:16px 18px 16px 20px;max-width:720px;width:100%;
+  box-shadow:0 10px 30px rgba(0,0,0,.13);
+  opacity:0;transform:translateY(14px);transition:opacity .42s ease,transform .42s ease;
+}
+.toast.in{opacity:1;transform:translateY(0)}
+.toast .art{flex:none;width:56px;height:56px;display:flex;align-items:center;justify-content:center}
+.toast .txt{flex:1;min-width:0}
+.toast .t{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:3px;letter-spacing:-.01em}
+.toast .d{font-size:13.5px;color:var(--muted);line-height:1.5}
+.toast .acts{flex:none;display:flex;align-items:center;gap:6px}
+
+/* split modal */
+.scrim{
+  position:absolute;inset:0;background:rgba(60,58,54,.42);z-index:60;
+  display:flex;align-items:center;justify-content:center;padding:28px;
+  opacity:0;transition:opacity .2s;
+}
+.scrim.in{opacity:1}
+.split{
+  display:flex;background:var(--white);border-radius:18px;overflow:hidden;
+  max-width:840px;width:100%;box-shadow:0 22px 60px rgba(0,0,0,.24);
+  transform:scale(.975);transition:transform .2s;
+}
+.scrim.in .split{transform:scale(1)}
+.split-l{flex:1;padding:38px 36px 30px;display:flex;flex-direction:column}
+.split-r{width:320px;flex:none;background:var(--bone);position:relative;
+  display:flex;align-items:center;justify-content:center;padding:24px}
+.split h2{font-family:var(--serif);font-size:29px;line-height:1.18;letter-spacing:-.015em;
+  margin-bottom:26px;max-width:330px}
+.feat{display:flex;gap:14px;margin-bottom:20px}
+.feat .ic{flex:none;margin-top:1px}
+.feat .ft{font-size:14.5px;font-weight:600;margin-bottom:3px}
+.feat .fd{font-size:13.5px;color:var(--muted);line-height:1.5}
+.split-acts{margin-top:auto;padding-top:18px;display:flex;flex-direction:column;gap:9px}
+.split-acts .btn{width:100%;padding:13px}
+.modal-x{position:absolute;top:14px;right:14px;z-index:5}
+
+/* replay control */
+.replay{max-width:1080px;margin:14px auto 0;display:flex;justify-content:flex-end}
+.replay button{
+  font-family:var(--sans);font-size:12.5px;color:var(--muted);background:rgba(255,255,255,.7);
+  border:1px solid var(--line2);border-radius:8px;padding:7px 13px;cursor:pointer;
+}
+.replay button:hover{color:var(--ink);background:#fff}
+
+/* =========================================================
+   PROTOTYPE 2 — onboarding intent fork
+   ========================================================= */
+.console{
+  max-width:1000px;margin:0 auto;background:var(--paper);border:1px solid var(--line2);
+  border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.10);overflow:hidden;
+}
+.console-bar{display:flex;align-items:center;gap:8px;padding:11px 15px;
+  background:#f0eee8;border-bottom:1px solid var(--line)}
+.console-bar .u{
+  margin-left:8px;font-size:12px;color:var(--muted2);background:var(--white);
+  border:1px solid var(--line2);border-radius:6px;padding:3px 30px 3px 10px;
+}
+.flow{padding:52px 40px 56px;min-height:600px}
+.steps{display:flex;justify-content:center;gap:7px;margin-bottom:38px}
+.steps i{width:6px;height:6px;border-radius:50%;background:var(--line2);display:block}
+.steps i.on{background:var(--ink)}
+.flow h1{
+  font-size:28px;font-weight:600;text-align:center;letter-spacing:-.02em;margin-bottom:9px;
+}
+.flow .sub{text-align:center;font-size:15px;color:var(--muted);margin-bottom:38px;
+  max-width:520px;margin-left:auto;margin-right:auto;line-height:1.55}
+
+.forks{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;max-width:600px;margin:0 auto}
+.fork{
+  background:var(--white);border:1px solid var(--line2);border-radius:13px;
+  padding:30px 22px 26px;text-align:center;cursor:pointer;transition:all .16s;
+}
+.fork:hover{border-color:#b9b3a5;box-shadow:0 5px 16px rgba(0,0,0,.07);transform:translateY(-2px)}
+.fork .fi{height:64px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.fork .fn{font-size:15px;font-weight:600;margin-bottom:7px}
+.fork .fd{font-size:13px;color:var(--muted);line-height:1.5}
+
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:880px;margin:0 auto}
+.wf{
+  background:var(--white);border:1px solid var(--line2);border-radius:13px;overflow:hidden;
+  cursor:pointer;transition:all .16s;display:flex;flex-direction:column;
+}
+.wf:hover{border-color:#b9b3a5;box-shadow:0 5px 16px rgba(0,0,0,.07)}
+.wf.picked{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.vid{
+  position:relative;height:126px;background:#f0eee8;border-bottom:1px solid var(--line);
+  overflow:hidden;
+}
+.vid-frame{
+  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:16px 16px 22px;gap:6px;
+}
+.vline{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;color:var(--ink2);
+  background:var(--white);border:1px solid var(--line);border-radius:5px;padding:4px 7px;
+  opacity:0;transform:translateY(4px);transition:all .3s;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;
+}
+.vline.show{opacity:1;transform:translateY(0)}
+.vline.done{border-color:#cfe0cf;background:#f2f7f2}
+.play{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(240,238,232,.72);transition:opacity .2s;
+}
+.play .pb{
+  width:42px;height:42px;border-radius:50%;background:var(--white);border:1px solid var(--line2);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.09);
+}
+.wf:hover .play .pb{background:var(--ink)}
+.wf:hover .play .pb svg polygon{fill:#fff}
+.prog{position:absolute;left:0;bottom:0;height:3px;background:var(--clay);width:0;transition:width .25s linear}
+.wf-b{padding:15px 16px 16px;flex:1;display:flex;flex-direction:column}
+.wf-t{font-size:14px;font-weight:600;margin-bottom:5px;letter-spacing:-.01em}
+.wf-d{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:13px;flex:1}
+.cost{border-top:1px solid var(--line);padding-top:11px}
+.cost .c1{font-size:12.5px;color:var(--ink2);font-weight:500;margin-bottom:3px}
+.cost .c2{font-size:11.5px;color:var(--muted2)}
+.model-tag{
+  display:inline-block;font-size:10.5px;color:var(--muted);background:#f2f0ea;
+  border:1px solid var(--line);border-radius:5px;padding:2px 7px;margin-top:8px;
+}
+.flow-foot{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:34px}
+
+.fund{max-width:460px;margin:0 auto}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:14px;font-weight:600;margin-bottom:8px}
+.inp{
+  display:flex;align-items:center;border:1px solid var(--line2);background:var(--white);
+  border-radius:10px;padding:12px 15px;font-size:15px;
+}
+.inp .cur{color:var(--muted2);margin-right:9px}
+.inp input{border:none;outline:none;font-family:var(--sans);font-size:15px;
+  width:100%;background:transparent;color:var(--ink)}
+.reload{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  background:var(--white);border:1px solid var(--line2);border-radius:11px;
+  padding:15px 16px;margin:22px 0 6px;
+}
+.reload .rt{font-size:14px;font-weight:600;margin-bottom:4px}
+.reload .rd{font-size:12.5px;color:var(--muted);line-height:1.5}
+.tgl{
+  flex:none;width:46px;height:27px;border-radius:14px;background:var(--ink);
+  position:relative;cursor:pointer;transition:background .18s;border:none;
+}
+.tgl.off{background:#cfccc3}
+.tgl b{position:absolute;top:3px;left:22px;width:21px;height:21px;border-radius:50%;
+  background:#fff;transition:left .18s;display:block}
+.tgl.off b{left:3px}
+.done-card{max-width:480px;margin:0 auto;text-align:center}
+.done-card .ring{
+  width:54px;height:54px;border-radius:50%;background:var(--clay-bg);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 20px;
+}
+
+/* =========================================================
+   PROTOTYPE 3 — dormancy email
+   ========================================================= */
+.mail{
+  max-width:720px;margin:0 auto;background:var(--white);border:1px solid var(--line2);
+  border-radius:14px;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.10);
+}
+.mail-hd{padding:18px 24px;border-bottom:1px solid var(--line);background:var(--paper)}
+.mail-subj{font-size:16px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em}
+.mail-meta{display:flex;align-items:center;gap:11px}
+.avat{
+  width:34px;height:34px;border-radius:50%;background:var(--clay-bg);flex:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.mail-from{font-size:13px;color:var(--ink2)}
+.mail-from b{font-weight:600;color:var(--ink)}
+.mail-to{font-size:12px;color:var(--muted2);margin-top:2px}
+
+.mbody{background:var(--bone);padding:38px 44px 40px}
+.lock{display:flex;align-items:center;gap:9px;margin-bottom:34px}
+.lock span{font-family:var(--serif);font-size:23px;letter-spacing:-.015em}
+.mbody h1{font-family:var(--serif);font-size:31px;line-height:1.2;letter-spacing:-.015em;
+  margin-bottom:16px;max-width:460px}
+.mbody p{font-family:var(--serif);font-size:15.5px;line-height:1.62;color:var(--ink2);
+  margin:0 0 14px;max-width:530px}
+.mrule{height:1px;background:#e0ddd4;margin:28px 0 26px}
+.mh2{font-family:var(--serif);font-size:19px;margin-bottom:22px;letter-spacing:-.01em}
+.reason{display:flex;gap:17px;margin-bottom:24px}
+.reason .ric{flex:none;width:28px;margin-top:2px}
+.reason .rb{flex:1}
+.reason .rt{font-family:var(--serif);font-size:15.5px;font-weight:700;margin-bottom:4px;color:var(--ink)}
+.reason .rd{font-family:var(--serif);font-size:14.5px;line-height:1.58;color:var(--ink2);margin-bottom:5px}
+.reason a{font-family:var(--serif);font-size:14.5px;color:var(--ink);text-decoration:underline;
+  text-underline-offset:2px}
+.reason a:hover{color:var(--clay)}
+.mcta{margin-top:32px}
+.mcta a{
+  display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+  font-family:var(--sans);font-size:14px;font-weight:500;padding:13px 22px;border-radius:9px;
+}
+.mnote{font-family:var(--serif);font-size:13.5px;color:var(--muted);margin-top:24px;
+  line-height:1.55;max-width:500px}
+
+.mfoot{background:var(--night);padding:34px 44px 38px;color:#c9c7c1}
+.useful{
+  border:1px solid #6b4433;border-radius:11px;padding:22px;text-align:center;margin-bottom:30px;
+}
+.useful .ut{font-family:var(--serif);font-size:21px;color:#f2f0ea;margin-bottom:14px}
+.thumbs{display:flex;gap:9px;justify-content:center}
+.thumbs button{
+  width:38px;height:38px;background:#232320;border:1px solid #3a3936;border-radius:7px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.thumbs button:hover{background:#2f2e2a;border-color:#5a5854}
+.thumbs button.sel{background:#3a2a22;border-color:var(--clay)}
+.foot-grid{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
+.foot-l .fw{display:flex;align-items:center;gap:9px;margin-bottom:20px}
+.foot-l .fw span{font-family:var(--serif);font-size:22px;color:#f2f0ea}
+.badges{display:flex;gap:9px}
+.badge{
+  border:1px solid #3a3936;border-radius:6px;padding:6px 12px;font-size:10px;color:#a8a6a0;
+  background:#1c1c1a;line-height:1.3;
+}
+.badge b{display:block;font-size:12px;color:#e8e6e0;font-weight:600}
+.foot-r{max-width:300px}
+.socials{display:flex;gap:16px;margin-bottom:18px;justify-content:flex-end}
+.socials a{color:#6f6d68}
+.socials a:hover{color:#a8a6a0}
+.foot-r .addr{font-family:var(--serif);font-size:12.5px;line-height:1.65;color:#8a8883;
+  border-top:1px solid #34332f;padding-top:16px}
+.foot-r .addr a{color:#c9c7c1}
+
+@media(max-width:900px){
+  .app-body{display:block}.rail{display:none}
+  .split{flex-direction:column}.split-r{width:auto;height:180px}
+  .forks,.gallery{grid-template-columns:1fr}
+  .mbody,.mfoot{padding-left:24px;padding-right:24px}
+}
+</style>
+</head>
+<body>
+
+<nav class="switcher">
+  <button id="tab1" class="on" onclick="show(1)">1 · Workflow Graduation prompt</button>
+  <button id="tab2" onclick="show(2)">2 · Guided Onboarding step</button>
+  <button id="tab3" onclick="show(3)">3 · Dormancy email</button>
+</nav>
+
+<div class="stage">
+
+<!-- ============================ PROTOTYPE 1 ============================ -->
+<section id="p1" class="proto">
+  <div class="app-window">
+    <div class="app-bar">
+      <span class="dot" style="background:#ec6a5e"></span>
+      <span class="dot" style="background:#f4bf4f"></span>
+      <span class="dot" style="background:#61c554"></span>
+    </div>
+
+    <div class="app-body">
+      <aside class="rail">
+        <div class="rail-brand">
+          <svg width="19" height="19" viewBox="0 0 100 100" aria-hidden="true">
+            <g fill="#d97757">
+              <rect x="46" y="8" width="8" height="34" rx="4"/>
+              <rect x="46" y="8" width="8" height="34" rx="4" transform="rotate(36 50 50)"/>
+              <rect x="46" y="8" width="8" height="34" rx="4" transform="rotate(72 50 50)"/>
+              <rect x="46" y="8" width="8" height="34" rx="4" transform="rotate(108 50 50)"/>
+              <rect x="46" y="8" width="8" height="34" rx="4" transform="rotate(144 50 50)"/>
+              <rect x="46" y="8" width="8" height="34" rx="4" transform="rotate(180 50 50)"/>
+              <rect x="46" y="8" width="8" height="34" rx="4" transform="rotate(216 50 50)"/>
+              <rect x="46" y="8" width="8" height="34" rx="4" transform="rotate(252 50 50)"/>
+              <rect x="46" y="8" width="8" height="34" rx="4" transform="rotate(288 50 50)"/>
+              <rect x="46" y="8" width="8" height="34" rx="4" transform="rotate(324 50 50)"/>
+            </g>
+          </svg>
+          <span>Claude</span>
+        </div>
+        <div class="rail-new">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6d6d68" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          New chat
+        </div>
+        <div class="rail-lbl">Today</div>
+        <div class="rail-item sel">Weekly lead outreach batch</div>
+        <div class="rail-item">Pricing page copy review</div>
+        <div class="rail-lbl" style="padding-top:14px">Previous 30 days</div>
+        <div class="rail-item">Lead outreach — Sept cohort <span class="rep">↺</span></div>
+        <div class="rail-item">Lead outreach — Aug cohort <span class="rep">↺</span></div>
+        <div class="rail-item">Lead outreach — enterprise <span class="rep">↺</span></div>
+        <div class="rail-item">Q3 board deck notes</div>
+        <div class="rail-item">Lead outreach — SMB list <span class="rep">↺</span></div>
+      </aside>
+
+      <div class="thread">
+        <div class="msg">
+          <div class="msg-you">
+            Here is this week&rsquo;s lead export. Same as always &mdash; write a personalized
+            first-touch email for each one, keep it under 120 words, reference their recent
+            funding or product launch, and put the results in a table I can paste into the CRM.
+            <div class="filerow">
+              <span class="chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6d6d68" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                leads_wk34.csv
+              </span>
+              <span class="chip">42 rows</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg msg-c">
+          <span class="ast">
+            <svg width="17" height="17" viewBox="0 0 100 100" aria-hidden="true">
+              <g fill="#d97757">
+                <rect x="46" y="8" width="9" height="34" rx="4.5"/>
+                <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(45 50 50)"/>
+                <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(90 50 50)"/>
+                <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(135 50 50)"/>
+                <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(180 50 50)"/>
+                <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(225 50 50)"/>
+                <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(270 50 50)"/>
+                <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(315 50 50)"/>
+              </g>
+            </svg>
+          </span>
+          <div class="body">
+            Done &mdash; <b>42 personalized emails</b>, each referencing the company&rsquo;s most recent
+            funding round or launch, all under 120 words. I have laid them out as a table with
+            <b>company</b>, <b>contact</b>, <b>subject line</b>, and <b>body</b> so it pastes
+            straight into your CRM.
+            <div class="filerow">
+              <span class="chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6d6d68" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+                outreach_wk34.csv
+              </span>
+              <span class="chip">42 drafts</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="composer">
+          <span>Reply to Claude&hellip;</span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b5b2aa" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </div>
+
+        <!-- graduation toast -->
+        <div class="toast-wrap">
+          <div class="toast" id="i1toast">
+            <div class="art">
+              <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="#191919" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="13" width="27" height="19" rx="3"/>
+                <rect x="15" y="20" width="27" height="19" rx="3" fill="#fff"/>
+                <rect x="21" y="27" width="27" height="19" rx="3" fill="#fff"/>
+                <path d="M50 34a11 11 0 0 1-11 11" stroke="#d97757"/>
+                <path d="M50 34l-3.5-4M50 34l3.5-4" stroke="#d97757"/>
+                <path d="M39 56a11 11 0 0 1-11-11" stroke="#d97757"/>
+              </svg>
+            </div>
+            <div class="txt">
+              <div class="t">You have run this workflow 6 times in the last 30 days</div>
+              <div class="d">Work you repeat can run on its own through the Claude API &mdash; on a
+                schedule, or triggered by your CRM when new leads arrive.</div>
+            </div>
+            <div class="acts">
+              <button class="btn btn-primary" onclick="i1open()">See how it works</button>
+              <button class="iconbtn" onclick="i1dismiss()" aria-label="Dismiss">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- split modal -->
+        <div class="scrim hidden" id="i1scrim">
+          <div class="split">
+            <div class="split-l">
+              <h2>Turn work you repeat into an automation</h2>
+
+              <div class="feat">
+                <span class="ic">
+                  <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#191919" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>
+                </span>
+                <div>
+                  <div class="ft">It runs without you</div>
+                  <div class="fd">Set it to run every Monday, or let your own systems start it when
+                    new rows land.</div>
+                </div>
+              </div>
+
+              <div class="feat">
+                <span class="ic">
+                  <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#191919" stroke-width="1.7" stroke-linecap="round"><path d="M4 4v6h6"/><path d="M20 20v-6h-6"/><path d="M20 9a8 8 0 0 0-14-3L4 8"/><path d="M4 15a8 8 0 0 0 14 3l2-2"/></svg>
+                </span>
+                <div>
+                  <div class="ft">Same instructions, every time</div>
+                  <div class="fd">Your prompt becomes a fixed step, so the output stays consistent
+                    across runs and across your team.</div>
+                </div>
+              </div>
+
+              <div class="feat">
+                <span class="ic">
+                  <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#191919" stroke-width="1.7" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+                </span>
+                <div>
+                  <div class="ft">You set the ceiling</div>
+                  <div class="fd">Spend limits and rate limits are yours to set before anything
+                    runs on its own.</div>
+                </div>
+              </div>
+
+              <div class="split-acts">
+                <button class="btn btn-primary" onclick="i1close()">Read the guide</button>
+                <button class="btn btn-ghost" onclick="i1close()">Not now</button>
+              </div>
+            </div>
+
+            <div class="split-r">
+              <button class="iconbtn modal-x" onclick="i1close()" aria-label="Close">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+              <svg width="236" height="230" viewBox="0 0 236 230" fill="none">
+                <ellipse cx="150" cy="72" rx="62" ry="50" fill="#d97757" opacity=".92"/>
+                <path d="M114 74c9-13 17 11 26-2s16 10 25-3 15 8 24-5" stroke="#191919" stroke-width="7" stroke-linecap="round" fill="none"/>
+                <ellipse cx="76" cy="118" rx="15" ry="12" fill="#d97757" opacity=".92"/>
+                <ellipse cx="52" cy="140" rx="9" ry="7" fill="#d97757" opacity=".92"/>
+                <g stroke="#191919" stroke-width="1.8" fill="#faf9f7">
+                  <rect x="30" y="158" width="52" height="17" rx="4"/>
+                  <rect x="44" y="176" width="52" height="17" rx="4"/>
+                  <rect x="58" y="194" width="52" height="17" rx="4"/>
+                </g>
+                <path d="M120 198h34" stroke="#191919" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M148 193l6 5-6 5" stroke="#191919" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <circle cx="184" cy="198" r="19" stroke="#191919" stroke-width="1.8" fill="#faf9f7"/>
+                <path d="M177 198a7 7 0 0 1 14 0 7 7 0 0 1-14 0" stroke="#d97757" stroke-width="1.8" fill="none"/>
+                <path d="M184 186v5M184 205v5" stroke="#191919" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="replay"><button onclick="i1replay()">↺ Replay trigger</button></div>
+</section>
+
+<!-- ============================ PROTOTYPE 2 ============================ -->
+<section id="p2" class="proto hidden">
+  <div class="console">
+    <div class="console-bar">
+      <span class="dot" style="background:#ec6a5e"></span>
+      <span class="dot" style="background:#f4bf4f"></span>
+      <span class="dot" style="background:#61c554"></span>
+      <span class="u">console.claude.com/onboarding</span>
+    </div>
+
+    <div class="flow">
+      <div class="steps">
+        <i id="sd1" class="on"></i><i id="sd2"></i><i id="sd3"></i>
+      </div>
+
+      <!-- step 1: intent fork -->
+      <div id="i2s1">
+        <h1>Do you know what you want to build?</h1>
+        <div class="sub">This helps us skip anything you do not need. You can change direction at
+          any point.</div>
+
+        <div class="forks">
+          <div class="fork" onclick="i2go(3)">
+            <div class="fi">
+              <svg width="60" height="60" viewBox="0 0 64 64" fill="none" stroke="#191919" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 40c-4-6-3-15 3-20a15 15 0 0 1 23 4"/>
+                <path d="M22 44h20M25 51h14"/>
+                <circle cx="42" cy="24" r="9" stroke="#d97757"/>
+                <path d="M38 24l3 3 6-6" stroke="#d97757"/>
+                <path d="M18 41c1 4 4 4 5 6" />
+              </svg>
+            </div>
+            <div class="fn">Yes, I know</div>
+            <div class="fd">Take me straight to funding my account and creating a key.</div>
+          </div>
+
+          <div class="fork" onclick="i2go(2)">
+            <div class="fi">
+              <svg width="60" height="60" viewBox="0 0 64 64" fill="none" stroke="#191919" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="10" y="16" width="20" height="15" rx="3"/>
+                <rect x="34" y="16" width="20" height="15" rx="3"/>
+                <rect x="10" y="35" width="20" height="15" rx="3" stroke="#d97757"/>
+                <rect x="34" y="35" width="20" height="15" rx="3"/>
+                <path d="M16 41l3 3 6-6" stroke="#d97757"/>
+              </svg>
+            </div>
+            <div class="fn">No, not yet</div>
+            <div class="fd">Show me what other teams automate, and what it costs to run.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- step 2: gallery -->
+      <div id="i2s2" class="hidden">
+        <h1>Start from something that already works</h1>
+        <div class="sub">Watch a 20-second run before you spend anything. Prices below are
+          calculated at current list rates.</div>
+
+        <div class="gallery" id="i2gal">
+          <div class="wf" data-id="inv">
+            <div class="vid">
+              <div class="vid-frame">
+                <div class="vline">$ read invoice_0412.pdf</div>
+                <div class="vline">vendor, date, total, tax, PO</div>
+                <div class="vline done">✓ 1,500 rows written to ledger.csv</div>
+              </div>
+              <div class="play"><span class="pb"><svg width="13" height="13" viewBox="0 0 12 12"><polygon points="3,1.5 10,6 3,10.5" fill="#191919"/></svg></span></div>
+              <div class="prog"></div>
+            </div>
+            <div class="wf-b">
+              <div class="wf-t">Invoice processing</div>
+              <div class="wf-d">Pull vendor, date, totals and PO number out of PDF invoices into a
+                clean spreadsheet.</div>
+              <div class="cost">
+                <div class="c1">&asymp; $0.011 per invoice</div>
+                <div class="c2">&asymp; $16 / month at 1,500 invoices</div>
+                <span class="model-tag">Haiku 4.5</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="wf" data-id="out">
+            <div class="vid">
+              <div class="vid-frame">
+                <div class="vline">$ load leads_wk34.csv</div>
+                <div class="vline">draft first-touch, &lt;120 words</div>
+                <div class="vline done">✓ 2,000 drafts ready to review</div>
+              </div>
+              <div class="play"><span class="pb"><svg width="13" height="13" viewBox="0 0 12 12"><polygon points="3,1.5 10,6 3,10.5" fill="#191919"/></svg></span></div>
+              <div class="prog"></div>
+            </div>
+            <div class="wf-b">
+              <div class="wf-t">Personalized outreach</div>
+              <div class="wf-d">Write a first-touch email per lead, grounded in their latest funding
+                or product news.</div>
+              <div class="cost">
+                <div class="c1">&asymp; $0.004 per email</div>
+                <div class="c2">&asymp; $8 / month at 2,000 emails</div>
+                <span class="model-tag">Haiku 4.5</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="wf" data-id="tri">
+            <div class="vid">
+              <div class="vid-frame">
+                <div class="vline">$ watch inbox: support@</div>
+                <div class="vline">classify → urgency → draft reply</div>
+                <div class="vline done">✓ 3,000 threads triaged</div>
+              </div>
+              <div class="play"><span class="pb"><svg width="13" height="13" viewBox="0 0 12 12"><polygon points="3,1.5 10,6 3,10.5" fill="#191919"/></svg></span></div>
+              <div class="prog"></div>
+            </div>
+            <div class="wf-b">
+              <div class="wf-t">Inbox triage and replies</div>
+              <div class="wf-d">Sort incoming mail by intent and urgency, then draft a reply for a
+                human to send.</div>
+              <div class="cost">
+                <div class="c1">&asymp; $0.006 per email</div>
+                <div class="c2">&asymp; $18 / month at 3,000 emails</div>
+                <span class="model-tag">Sonnet 5</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="wf" data-id="con">
+            <div class="vid">
+              <div class="vid-frame">
+                <div class="vline">$ review msa_acme_v3.docx</div>
+                <div class="vline">flag: liability, term, indemnity</div>
+                <div class="vline done">✓ 7 clauses flagged for counsel</div>
+              </div>
+              <div class="play"><span class="pb"><svg width="13" height="13" viewBox="0 0 12 12"><polygon points="3,1.5 10,6 3,10.5" fill="#191919"/></svg></span></div>
+              <div class="prog"></div>
+            </div>
+            <div class="wf-b">
+              <div class="wf-t">Contract clause review</div>
+              <div class="wf-d">Flag clauses that deviate from your standard terms and explain how
+                they differ.</div>
+              <div class="cost">
+                <div class="c1">&asymp; $0.21 per contract</div>
+                <div class="c2">&asymp; $42 / month at 200 contracts</div>
+                <span class="model-tag">Sonnet 5</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="wf" data-id="tic">
+            <div class="vid">
+              <div class="vid-frame">
+                <div class="vline">$ stream tickets: zendesk</div>
+                <div class="vline">route → billing | bug | churn-risk</div>
+                <div class="vline done">✓ 10,000 tickets routed</div>
+              </div>
+              <div class="play"><span class="pb"><svg width="13" height="13" viewBox="0 0 12 12"><polygon points="3,1.5 10,6 3,10.5" fill="#191919"/></svg></span></div>
+              <div class="prog"></div>
+            </div>
+            <div class="wf-b">
+              <div class="wf-t">Ticket classification</div>
+              <div class="wf-d">Route support tickets to the right queue and surface the ones that
+                look like churn risk.</div>
+              <div class="cost">
+                <div class="c1">&asymp; $0.002 per ticket</div>
+                <div class="c2">&asymp; $20 / month at 10,000 tickets</div>
+                <span class="model-tag">Haiku 4.5</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="wf" data-id="dig">
+            <div class="vid">
+              <div class="vid-frame">
+                <div class="vline">$ every Monday 07:00</div>
+                <div class="vline">read 40 sources → summarize</div>
+                <div class="vline done">✓ digest sent to #competitive</div>
+              </div>
+              <div class="play"><span class="pb"><svg width="13" height="13" viewBox="0 0 12 12"><polygon points="3,1.5 10,6 3,10.5" fill="#191919"/></svg></span></div>
+              <div class="prog"></div>
+            </div>
+            <div class="wf-b">
+              <div class="wf-t">Weekly research digest</div>
+              <div class="wf-d">Read your sources on a schedule and post one summary where your team
+                already works.</div>
+              <div class="cost">
+                <div class="c1">&asymp; $0.34 per run</div>
+                <div class="c2">&asymp; $1.40 / month, run weekly</div>
+                <span class="model-tag">Sonnet 5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-foot">
+          <button class="btn-text" onclick="i2go(3)">Skip for now</button>
+          <button class="btn btn-primary" id="i2next" onclick="i2go(3)" disabled
+            style="opacity:.4;cursor:not-allowed">Continue</button>
+        </div>
+      </div>
+
+      <!-- step 3: fund -->
+      <div id="i2s3" class="hidden">
+        <h1>Add funds to start building</h1>
+        <div class="sub">Claude API is pay as you go. Nothing is charged until you make your first
+          request.</div>
+
+        <div class="fund">
+          <div class="field">
+            <label>Amount to add</label>
+            <div class="inp"><span class="cur">$</span><input type="text" value="25"></div>
+          </div>
+
+          <div class="reload">
+            <div>
+              <div class="rt">Turn on auto-reload</div>
+              <div class="rd">Top up automatically when your balance runs low, so a running
+                workflow does not stop mid-job.</div>
+            </div>
+            <button class="tgl" id="i2tgl" onclick="i2toggle()" aria-label="Auto-reload"><b></b></button>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-top:26px">
+            <div class="field" style="flex:1;margin:0">
+              <label style="font-size:12.5px;font-weight:500;color:var(--muted)">When balance reaches</label>
+              <div class="inp"><span class="cur">$</span><input type="text" value="10"></div>
+            </div>
+            <div class="field" style="flex:1;margin:0">
+              <label style="font-size:12.5px;font-weight:500;color:var(--muted)">Bring it back up to</label>
+              <div class="inp"><span class="cur">$</span><input type="text" value="50"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:28px;display:flex;flex-direction:column;gap:9px">
+            <button class="btn btn-primary" style="width:100%;padding:13px" onclick="i2go(4)">
+              Add funds and continue</button>
+            <button class="btn-text" onclick="i2go(4)">Skip for now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- step 4: done -->
+      <div id="i2s4" class="hidden">
+        <div class="done-card">
+          <div class="ring">
+            <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <h1 style="font-family:var(--serif);font-size:31px;font-weight:400">You are in</h1>
+          <div class="sub" style="margin-bottom:30px">Your key is ready. Head to the Console
+            when you want to make your first request.</div>
+          <button class="btn btn-primary" style="width:100%;padding:13px;margin-bottom:9px">
+            Run it now</button>
+          <button class="btn btn-ghost" style="width:100%;padding:13px" onclick="i2reset()">
+            Start over</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PROTOTYPE 3 ============================ -->
+<section id="p3" class="proto hidden">
+  <div class="mail">
+    <div class="mail-hd">
+      <div class="mail-subj">Your Claude API usage has dropped</div>
+      <div class="mail-meta">
+        <span class="avat">
+          <svg width="17" height="17" viewBox="0 0 100 100" aria-hidden="true">
+            <g fill="#d97757">
+              <rect x="46" y="8" width="9" height="34" rx="4.5"/>
+              <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(45 50 50)"/>
+              <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(90 50 50)"/>
+              <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(135 50 50)"/>
+              <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(180 50 50)"/>
+              <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(225 50 50)"/>
+              <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(270 50 50)"/>
+              <rect x="46" y="8" width="9" height="34" rx="4.5" transform="rotate(315 50 50)"/>
+            </g>
+          </svg>
+        </span>
+        <div>
+          <div class="mail-from"><b>Claude</b> &lt;no-reply@anthropic.com&gt;</div>
+          <div class="mail-to">to me &nbsp;·&nbsp; 26 Aug 2026, 09:04</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mbody">
+      <div class="lock">
+        <svg width="27" height="27" viewBox="0 0 100 100" aria-hidden="true">
+          <g fill="#d97757">
+            <rect x="46" y="6" width="8" height="36" rx="4"/>
+            <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(36 50 50)"/>
+            <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(72 50 50)"/>
+            <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(108 50 50)"/>
+            <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(144 50 50)"/>
+            <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(180 50 50)"/>
+            <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(216 50 50)"/>
+            <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(252 50 50)"/>
+            <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(288 50 50)"/>
+            <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(324 50 50)"/>
+          </g>
+        </svg>
+        <span>Claude</span>
+      </div>
+
+      <h1>Your API usage has dropped</h1>
+
+      <p>Your Claude API usage over the past 30 days is well below where it was the month before.
+        If that was deliberate, nothing needs to happen and you can ignore this.</p>
+
+      <p>If it was not, the causes below account for most of the drops we see. Each one links to
+        the guide that walks through it.</p>
+
+      <div class="mrule"></div>
+      <div class="mh2">Common reasons usage stops</div>
+
+      <div class="reason">
+        <span class="ric">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>
+        </span>
+        <div class="rb">
+          <div class="rt">Your credit balance ran out</div>
+          <div class="rd">Requests are refused once the balance reaches zero, and a workflow can
+            stop mid-run without anyone noticing. Auto-reload prevents it.</div>
+          <a href="#">Set up auto-reload and spend alerts</a>
+        </div>
+      </div>
+
+      <div class="reason">
+        <span class="ric">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 7v5l3 2"/><path d="M17 3l4 2-4 2z" fill="#d97757" stroke="#d97757"/></svg>
+        </span>
+        <div class="rb">
+          <div class="rt">You were hitting rate limits or overload errors</div>
+          <div class="rd">Repeated 429 or 529 responses will stall a job. Retries with backoff, or a
+            higher usage tier, usually clear it.</div>
+          <a href="#">Read about rate limits and retries</a>
+        </div>
+      </div>
+
+      <div class="reason">
+        <span class="ric">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+        </span>
+        <div class="rb">
+          <div class="rt">A model you depended on was retired</div>
+          <div class="rd">Pinned model versions are eventually deprecated. Calls to a retired
+            version fail rather than falling back.</div>
+          <a href="#">Check the model deprecation schedule</a>
+        </div>
+      </div>
+
+      <div class="reason">
+        <span class="ric">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </span>
+        <div class="rb">
+          <div class="rt">It cost more than you expected</div>
+          <div class="rd">Prompt caching cuts input cost on repeated prefixes, the Batch API halves
+            the price of anything not time-sensitive, and Haiku handles high-volume classification
+            for a fraction of Sonnet.</div>
+          <a href="#">See ways to reduce cost</a>
+        </div>
+      </div>
+
+      <div class="reason">
+        <span class="ric">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.7a2 2 0 0 1 3.4 0l7.3 12.6a2 2 0 0 1-1.7 3H4.7a2 2 0 0 1-1.7-3z"/><path d="M12 9v4M12 17h.02"/></svg>
+        </span>
+        <div class="rb">
+          <div class="rt">Your integration broke after a change</div>
+          <div class="rd">Schema changes, tool definitions and SDK upgrades are the usual culprits
+            when a workflow that ran for months suddenly stops.</div>
+          <a href="#">Read the API changelog and versioning guide</a>
+        </div>
+      </div>
+
+      <div class="reason">
+        <span class="ric">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.3A7 7 0 1 0 5 16h13a4 4 0 0 0 0-8z"/><path d="M12 21v-6M9.5 18l2.5-3 2.5 3" stroke="#d97757"/></svg>
+        </span>
+        <div class="rb">
+          <div class="rt">You moved the workload to a cloud provider</div>
+          <div class="rd">If your traffic now runs through Amazon Bedrock, Google Vertex AI or
+            Microsoft Foundry, this drop is expected and nothing is wrong.</div>
+          <a href="#">Compare direct API and cloud platform access</a>
+        </div>
+      </div>
+
+      <div class="mrule"></div>
+
+      <div class="mcta"><a href="#">Read the troubleshooting guide</a></div>
+
+      <div class="mnote">You are receiving this because you are an admin on an organization with a
+        Claude API key. We send this at most once per quarter.</div>
+    </div>
+
+    <div class="mfoot">
+      <div class="useful">
+        <div class="ut">Was this email useful?</div>
+        <div class="thumbs">
+          <button id="thUp" onclick="vote('up')" aria-label="Yes">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#e8e6e0" stroke-width="1.6" stroke-linejoin="round"><path d="M7 22V11l5-9a3 3 0 0 1 3 3v4h4.5a2 2 0 0 1 2 2.4l-1.7 8A2 2 0 0 1 17.8 22z"/><path d="M7 11H3v11h4"/></svg>
+          </button>
+          <button id="thDown" onclick="vote('down')" aria-label="No">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#e8e6e0" stroke-width="1.6" stroke-linejoin="round"><path d="M17 2v11l-5 9a3 3 0 0 1-3-3v-4H4.5a2 2 0 0 1-2-2.4l1.7-8A2 2 0 0 1 6.2 2z"/><path d="M17 13h4V2h-4"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="foot-grid">
+        <div class="foot-l">
+          <div class="fw">
+            <svg width="25" height="25" viewBox="0 0 100 100" aria-hidden="true">
+              <g fill="#d97757">
+                <rect x="46" y="6" width="8" height="36" rx="4"/>
+                <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(36 50 50)"/>
+                <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(72 50 50)"/>
+                <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(108 50 50)"/>
+                <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(144 50 50)"/>
+                <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(180 50 50)"/>
+                <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(216 50 50)"/>
+                <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(252 50 50)"/>
+                <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(288 50 50)"/>
+                <rect x="46" y="6" width="8" height="36" rx="4" transform="rotate(324 50 50)"/>
+              </g>
+            </svg>
+            <span>Claude</span>
+          </div>
+          <div class="badges">
+            <span class="badge">Download on the<b>App Store</b></span>
+            <span class="badge">Get it on<b>Google Play</b></span>
+          </div>
+        </div>
+
+        <div class="foot-r">
+          <div class="socials">
+            <a href="#" aria-label="Instagram"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#" aria-label="LinkedIn"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.76-2.05C20.6 8.65 22 10.9 22 14.3V21h-4v-6c0-1.5-.03-3.4-2.1-3.4-2.1 0-2.4 1.6-2.4 3.3V21H9z"/></svg></a>
+            <a href="#" aria-label="X"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M18.2 2H21l-6.5 7.4L22 22h-6.2l-4.8-6.3L5.4 22H2.6l7-8L2 2h6.3l4.4 5.8zM17 20.2h1.6L7.1 3.7H5.4z"/></svg></a>
+            <a href="#" aria-label="YouTube"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.6-.46-5.3a2.8 2.8 0 0 0-2-2C18.8 4.2 12 4.2 12 4.2s-6.8 0-8.54.5a2.8 2.8 0 0 0-2 2C1 8.4 1 12 1 12s0 3.6.46 5.3a2.8 2.8 0 0 0 2 2c1.74.5 8.54.5 8.54.5s6.8 0 8.54-.5a2.8 2.8 0 0 0 2-2C23 15.6 23 12 23 12M9.8 15.5v-7l5.7 3.5z"/></svg></a>
+          </div>
+          <div class="addr">
+            Anthropic PBC, 548 Market St, PMB 90375,<br>San Francisco, CA 94104
+            <br><br>This email was sent to <a href="#">you@company.com</a>. To opt out of future
+            emails, click <a href="#">unsubscribe</a>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+/* ---------------- switcher ---------------- */
+function show(n){
+  var i;
+  for(i=1;i<=3;i++){
+    document.getElementById("p"+i).classList.add("hidden");
+    document.getElementById("tab"+i).classList.remove("on");
+  }
+  document.getElementById("p"+n).classList.remove("hidden");
+  document.getElementById("tab"+n).classList.add("on");
+  if(n===1){i1replay();}
+}
+
+/* ---------------- prototype 1 ---------------- */
+var i1timer=null;
+function i1replay(){
+  var t=document.getElementById("i1toast");
+  var s=document.getElementById("i1scrim");
+  s.classList.add("hidden");
+  s.classList.remove("in");
+  t.classList.remove("in");
+  t.style.display="flex";
+  if(i1timer){clearTimeout(i1timer);}
+  i1timer=setTimeout(function(){t.classList.add("in");},1500);
+}
+function i1dismiss(){
+  var t=document.getElementById("i1toast");
+  t.classList.remove("in");
+  setTimeout(function(){t.style.display="none";},400);
+}
+function i1open(){
+  var s=document.getElementById("i1scrim");
+  s.classList.remove("hidden");
+  requestAnimationFrame(function(){s.classList.add("in");});
+}
+function i1close(){
+  var s=document.getElementById("i1scrim");
+  s.classList.remove("in");
+  setTimeout(function(){s.classList.add("hidden");},220);
+  i1dismiss();
+}
+
+/* ---------------- prototype 2 ---------------- */
+var i2pick=null;
+
+function i2go(step){
+  var i;
+  for(i=1;i<=4;i++){
+    document.getElementById("i2s"+i).classList.add("hidden");
+  }
+  document.getElementById("i2s"+step).classList.remove("hidden");
+  var dot=step>=4?3:step;
+  for(i=1;i<=3;i++){
+    document.getElementById("sd"+i).classList.toggle("on",i<=dot);
+  }
+}
+
+function i2toggle(){
+  document.getElementById("i2tgl").classList.toggle("off");
+}
+
+function i2reset(){
+  i2pick=null;
+  var cards=document.querySelectorAll("#i2gal .wf");
+  var i;
+  for(i=0;i<cards.length;i++){cards[i].classList.remove("picked");}
+  var nx=document.getElementById("i2next");
+  nx.disabled=true;nx.style.opacity=".4";nx.style.cursor="not-allowed";
+  document.getElementById("i2tgl").classList.remove("off");
+  i2go(1);
+}
+
+/* gallery: play the demo, then select */
+function i2wire(){
+  var cards=document.querySelectorAll("#i2gal .wf");
+  var i;
+  for(i=0;i<cards.length;i++){
+    (function(card){
+      var playing=false;
+      card.addEventListener("click",function(){
+        var id=card.getAttribute("data-id");
+        i2pick=id;
+        var all=document.querySelectorAll("#i2gal .wf");
+        var k;
+        for(k=0;k<all.length;k++){all[k].classList.remove("picked");}
+        card.classList.add("picked");
+        var nx=document.getElementById("i2next");
+        nx.disabled=false;nx.style.opacity="1";nx.style.cursor="pointer";
+        if(playing){return;}
+        playing=true;
+        var lines=card.querySelectorAll(".vline");
+        var prog=card.querySelector(".prog");
+        var play=card.querySelector(".play");
+        var n;
+        for(n=0;n<lines.length;n++){lines[n].classList.remove("show");}
+        play.style.opacity="0";
+        prog.style.width="0";
+        var step=0;
+        var iv=setInterval(function(){
+          if(step<lines.length){
+            lines[step].classList.add("show");
+            prog.style.width=Math.round((step+1)/lines.length*100)+"%";
+            step++;
+          }else{
+            clearInterval(iv);
+            setTimeout(function(){
+              play.style.opacity="1";
+              prog.style.width="0";
+              playing=false;
+            },1100);
+          }
+        },620);
+      });
+    })(cards[i]);
+  }
+}
+
+/* ---------------- prototype 3 ---------------- */
+function vote(dir){
+  var up=document.getElementById("thUp");
+  var dn=document.getElementById("thDown");
+  up.classList.toggle("sel",dir==="up");
+  dn.classList.toggle("sel",dir==="down");
+}
+
+/* ---------------- boot ---------------- */
+i2wire();
+i1replay();
+</script>
+</body>
+</html>
